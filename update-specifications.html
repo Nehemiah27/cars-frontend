@@ -6,5 +6,187 @@
     <title>Update Specifications</title>
     <link rel="stylesheet" href="style.css" />
   </head>
-  <body></body>
+  <body>
+    <div id="main-container">
+      <a class="redirecting" href="./view-cars.html">View Cars</a>
+      <br />
+      <a class="redirecting" href="./add-car.html">Add Car</a>
+      <br />
+    </div>
+  </body>
+  <script>
+    document.addEventListener("DOMContentLoaded", async function () {
+      const pageElement = document.getElementById("main-container"),
+        urlParams = new URLSearchParams(window.location.search),
+        carID = urlParams.get("carID");
+
+      async function viewCarsData(carID) {
+        try {
+          const response = await fetch(
+              `http://localhost:5271/api/v1/cars/car-data/${carID}`,
+              { method: "GET" }
+            ),
+            respData = await response.json();
+          if (respData.success) updateCarData(respData.data);
+        } catch (error) {
+          console.log("error", error);
+        }
+      }
+
+      async function updateSpecs(specifications) {
+        try {
+          const response = await fetch(
+              `http://localhost:5271/api/v1/cars/update-specifications`,
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ carID, specifications: specifications }),
+              }
+            ),
+            respData = await response.json();
+          if (respData.success) alert(respData.message);
+        } catch (error) {
+          console.log("error", error);
+        }
+      }
+
+      if (carID === null) nullCarData();
+      else viewCarsData(carID);
+
+      function nullCarData() {
+        pageElement.innerHTML += `No Car Data available for the redirected Car URL, try using above links to make some activity`;
+      }
+
+      function updateCarData(carData) {
+        if (carData === null) return nullCarData();
+
+        pageElement.innerHTML += `<a class="redirecting" href="./view-summary.html?carID=${
+          carData.carID
+        }">View Summary</a>
+          <br /><a class="redirecting" href="./view-car-data.html?carID=${
+            carData.carID
+          }">View Car Data</a>
+          <br /><a class="redirecting" href="./update-info.html?carID=${
+            carData.carID
+          }">View/Update Info</a>
+          <br /><h1>Car Specifications</h1>
+      ${accordionGroup(carData)}}
+    `;
+        attachAccordianBehavior();
+        attachUpdateBehavior();
+      }
+
+      function accordionGroup(carData) {
+        const specifications = Object.keys(carData.specifications),
+          headings = [
+            "Overview",
+            "Engine & Transmission",
+            "Hybrid System",
+            "Performance & Efficiency",
+            "Exterior Equipment",
+            "Interior Equipment",
+            "Seats & Upholestry",
+            "Entertainment Front",
+            "Entertainment Rear",
+            "Safety Equipments",
+            "Supsension, Brakes, Wheels & Tyres",
+            "Dimensions, Weight, Storage & Capacity",
+            "Warranty & Service Package",
+            "Exterior Colours",
+          ];
+        const updatedAccoridans = specifications.map(
+          (currentSpecification, index) => {
+            return `<button class="accordion" data-attr="${currentSpecification}">${
+              headings[index]
+            }</button>
+    <div class="panel" id="${currentSpecification}">
+      <div class="data-display engineDisplacement">Engine Displacement: Featured<input type="checkbox" class="featured" ${
+        carData.specifications[currentSpecification].engineDisplacement.feature
+          ? "checked"
+          : ""
+      }/> <input type="text" value="${
+              carData.specifications[currentSpecification].engineDisplacement
+                .value
+            }" class="value"/></div>
+      <div class="data-display powerFigure">Power Figure: Featured<input type="checkbox" ${
+        carData.specifications[currentSpecification].powerFigure.feature
+          ? "checked"
+          : ""
+      } class="featured"/> <input type="text" value="${
+              carData.specifications[currentSpecification].powerFigure.value
+            }" class="value"/></div>
+      <div class="data-display torqueFigure">Torque Figure: Featured<input type="checkbox" ${
+        carData.specifications[currentSpecification].torqueFigure.feature
+          ? "checked"
+          : ""
+      } class="featured"/> <input type="text" value="${
+              carData.specifications[currentSpecification].torqueFigure.value
+            }" class="value"/></div>
+      <div class="data-display driveTrain">Drive Train: Featured<input type="checkbox" ${
+        carData.specifications[currentSpecification].driveTrain.feature
+          ? "checked"
+          : ""
+      } class="featured"/> <input type="text" value="${
+              carData.specifications[currentSpecification].driveTrain.value
+            }" class="value"/></div>
+      <div class="data-display transmission">Transmission: Featured<input type="checkbox" ${
+        carData.specifications[currentSpecification].transmission.feature
+          ? "checked"
+          : ""
+      } class="featured"/> <input type="text" value="${
+              carData.specifications[currentSpecification].transmission.value
+            }" class="value"/></div>
+      <button class="update-specifications">Update</button>
+    </div>`;
+          }
+        );
+        return updatedAccoridans.join("");
+      }
+
+      function attachAccordianBehavior() {
+        const accoridans = document.getElementsByClassName("accordion");
+        for (let index = 0; index < accoridans.length; index++) {
+          accoridans[index].addEventListener("click", function () {
+            this.classList.toggle("active");
+            const panel = this.nextElementSibling;
+            if (panel.style.maxHeight) panel.style.maxHeight = null;
+            else panel.style.maxHeight = panel.scrollHeight + "px";
+          });
+        }
+      }
+
+      function attachUpdateBehavior() {
+        const updateButtons = document.getElementsByClassName(
+          "update-specifications"
+        );
+        for (let index = 0; index < updateButtons.length; index++) {
+          updateButtons[index].addEventListener("click", function () {
+            const dataElements =
+              this.parentNode.getElementsByClassName("data-display");
+            const dataToUpdate = {};
+            for (let index1 = 0; index1 < dataElements.length; index1++) {
+              dataToUpdate[
+                dataElements[index1]
+                  .getAttribute("class")
+                  .replace(/\s/g, "")
+                  .replace("data-display", "")
+              ] = {
+                feature:
+                  dataElements[index1].getElementsByClassName("featured")[0]
+                    .checked,
+                value:
+                  dataElements[index1].getElementsByClassName("value")[0].value,
+              };
+            }
+            const specs = {
+              [this.parentNode.getAttribute("id")]: dataToUpdate,
+            };
+            updateSpecs(specs);
+          });
+        }
+      }
+    });
+  </script>
 </html>
