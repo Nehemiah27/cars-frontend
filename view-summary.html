@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>View Summary Section</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div id="main-container">
+      <a class="redirecting" href="./view-cars.html">View Cars</a>
+      <br />
+      <a class="redirecting" href="./add-car.html">Add Car</a>
+      <br />
+    </div>
+  </body>
+  <script>
+    document.addEventListener("DOMContentLoaded", async function () {
+      const pageElement = document.getElementById("main-container");
+
+      async function viewCarsData(carID) {
+        try {
+          const response = await fetch(
+              `http://localhost:5271/api/v1/cars/summary/${carID}`,
+              { method: "GET" }
+            ),
+            respData = await response.json();
+          if (respData.success) updateCarData(respData.data);
+          else nullCarData();
+        } catch (error) {
+          console.log("error", error);
+        }
+      }
+      const urlParams = new URLSearchParams(window.location.search);
+      const carID = urlParams.get("carID");
+
+      if (carID === null) nullCarData();
+      else viewCarsData(carID);
+
+      function nullCarData() {
+        pageElement.innerHTML += `No Car Data available for the redirected Car URL, try using above links to make some activity`;
+      }
+
+      function updateCarData(carData) {
+        if (carData === null) return nullCarData();
+        pageElement.innerHTML += `<a class="redirecting" href="./view-car-data.html?carID=${carID}">View Car Data</a>
+      <br /><a class="redirecting" href="./update-specifications.html?carID=${carID}">View/Update Specifications</a>
+      <br /><a class="redirecting" href="./update-info.html?carID=${carID}">View/Update Info</a><br /><h1>Summary</h1><br /><div>Overview: ${carData.overview.join(
+          ","
+        )}</div><div>Overview: ${carData.overview.join(
+          ","
+        )}</div></div><div>Engine & Transmission: ${carData.engineAndTransmission.join(
+          ","
+        )}</div></div><div>Hybrid System: ${carData.hybridSystem.join(
+          ","
+        )}</div></div><div>Performance & Efficiency: ${carData.performanceAndEfficiency.join(
+          ","
+        )}</div></div><div>Exterior equipment: ${carData.exteriorEquipment.join(
+          ","
+        )}</div></div><div>Interior Equipment: ${carData.interiorEquipment.join(
+          ","
+        )}</div></div><div>Seats & Upholestry: ${carData.seatsAndUpholestry.join(
+          ","
+        )}</div></div><div>Entertainment Front: ${carData.entertainmentFront.join(
+          ","
+        )}</div></div><div>Entertainment Rear: ${carData.entertainmentRear.join(
+          ","
+        )}</div></div><div>Safety Equipments: ${carData.safetyEquipments.join(
+          ","
+        )}</div></div><div>Suspension, Breaks, Wheels & Tyres: ${carData.supsensionBrakesWheelsAndTyres.join(
+          ","
+        )}</div></div><div>Dimensions, Weight, Storage & Capacity: ${carData.dimensionsWeightStorageCapacity.join(
+          ","
+        )}</div></div><div>Warranty & Service Package: ${carData.warrantyAndServicePackage.join(
+          ","
+        )}</div><div>Exterior colours: ${carData.exteriorColours.join(
+          ","
+        )}</div>`;
+      }
+    });
+  </script>
+</html>

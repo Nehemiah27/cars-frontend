@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>View Car Data</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div id="main-container">
+      <a class="redirecting" href="./view-cars.html">View Cars</a>
+      <br />
+      <a class="redirecting" href="./add-car.html">Add Car</a>
+      <br />
+    </div>
+  </body>
+  <script>
+    document.addEventListener("DOMContentLoaded", async function () {
+      const pageElement = document.getElementById("main-container");
+
+      async function viewCarsData(carID) {
+        try {
+          const response = await fetch(
+              `http://localhost:5271/api/v1/cars/car-data/${carID}`,
+              { method: "GET" }
+            ),
+            respData = await response.json();
+          if (respData.success) updateCarData(respData.data);
+        } catch (error) {
+          console.log("error", error);
+        }
+      }
+      const urlParams = new URLSearchParams(window.location.search);
+      const carID = urlParams.get("carID");
+
+      if (carID === null) nullCarData();
+      else viewCarsData(carID);
+
+      function nullCarData() {
+        pageElement.innerHTML += `No Car Data available for the redirected Car URL, try using above links to make some activity`;
+      }
+
+      function updateCarData(carData) {
+        console.log(carData);
+        if (carData === null) return nullCarData();
+        pageElement.innerHTML += `<a class="redirecting" href="./view-summary.html?carID=${
+          carData.carID
+        }">View Summary</a>
+      <br /><a class="redirecting" href="./update-specifications.html?carID=${
+        carData.carID
+      }">View/Update Specifications</a>
+      <br /><a class="redirecting" href="./update-info.html?carID=${
+        carData.carID
+      }">View/Update Info</a>
+      <br /><h1>Car Data</h1><div>Category: ${
+        carData.category
+      }</div><div>Name: ${carData.name}</div><div>Price: ${
+          carData.price
+        }</div><div>KMS driven: ${carData.kmsDriven}</div><div>Fuel Type: ${
+          carData.fuelType
+        }</div><div>Registration State: ${
+          carData.regState
+        }</div><div></div><div>Exhaust Note: <a href="http://localhost:5271/api/v1${
+          carData.exhaustNote
+        }" target="_blank">click to here to play in a new window</a></div><div>Featured Video: <a href="${
+          carData.featuredVideo.includes("https")
+            ? carData.featuredVideo
+            : `http://localhost:5271/api/v1${carData.featuredVideo}`
+        }" target="_blank">click here to play in a new window</a></div>`;
+      }
+    });
+  </script>
+</html>

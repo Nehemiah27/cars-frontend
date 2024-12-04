@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>View Cars</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div id="main-container">
+      <a class="redirecting" href="./add-car.html">Add Car</a><br />
+    </div>
+  </body>
+  <script>
+    document.addEventListener("DOMContentLoaded", async function () {
+      async function viewCars() {
+        try {
+          const response = await fetch(
+              "http://localhost:5271/api/v1/cars/all-cars",
+              { method: "GET" }
+            ),
+            respData = await response.json();
+          if (respData.success) updateCarData(respData.data);
+        } catch (error) {
+          console.log("error", error);
+        }
+      }
+      await viewCars();
+
+      function updateCarData(carData) {
+        const pageElement = document.getElementById("main-container");
+        if (!carData.length)
+          return (pageElement.innerHTML += `<div>No Inventory available at the moment, try adding a new Car from the above link</div>`);
+
+        let showHTML = ``;
+        carData.forEach((currentCar) => {
+          showHTML += `<a class="redirecting" href="./view-car-data.html?carID=${currentCar.carID}">${currentCar.name}</a><br />`;
+        });
+        pageElement.innerHTML += showHTML;
+      }
+    });
+  </script>
+</html>
